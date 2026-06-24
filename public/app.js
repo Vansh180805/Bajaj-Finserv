@@ -302,7 +302,12 @@ function renderResults(data) {
   renderDegreesChart(data.analytics?.degrees);
 
   // Render Vis.js Interactive 2D Network Simulation
-  renderVisNetwork(data);
+  try {
+    renderVisNetwork(data);
+  } catch (visError) {
+    console.error("Vis.js rendering error:", visError);
+    logToTerminal(`[SYSTEM_ERROR] Failed to render physics sandbox: ${visError.message}`, 'error');
+  }
 
   // Render raw JSON payload inspector
   jsonOutput.innerText = JSON.stringify(data, null, 2);
@@ -529,7 +534,23 @@ function renderDegreesChart(degreesData) {
 // Renders Vis.js physics simulation node map
 function renderVisNetwork(data) {
   const container = document.getElementById('vis-network-container');
-  
+  const prompt = document.getElementById('canvas-prompt');
+
+  if (typeof vis === 'undefined') {
+    console.warn("Vis.js is not loaded.");
+    logToTerminal("[SYSTEM_WARN] Vis.js physics engine is offline. Draggable graph canvas is disabled.", "warn");
+    if (prompt) {
+      prompt.innerText = "⚠️ Vis.js physics engine could not be loaded. Please check your internet connection.";
+      prompt.classList.remove('hide');
+    }
+    return;
+  }
+
+  // Hide prompt since we are rendering successfully
+  if (prompt) {
+    prompt.classList.add('hide');
+  }
+
   // Collect nodes
   const nodesSet = new Set();
   const treeNodes = new Set();
