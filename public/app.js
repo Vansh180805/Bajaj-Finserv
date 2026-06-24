@@ -30,6 +30,7 @@ const clearTerminalBtn = document.getElementById('clear-terminal-btn');
 const canvasPrompt = document.getElementById('canvas-prompt');
 const matrixContainer = document.getElementById('matrix-container');
 const degreesChartContainer = document.getElementById('degrees-chart-container');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
 
 // Vis.js Global Network Reference
 let networkInstance = null;
@@ -77,6 +78,37 @@ function logToTerminal(message, type = 'info') {
 // Clear terminal logs
 clearTerminalBtn.addEventListener('click', () => {
   compilerTerminal.innerHTML = `<div class="log-line system">[SYSTEM] Console cleared. Waiting for actions...</div>`;
+});
+
+// Full Screen toggle for graph canvas container
+if (fullscreenBtn) {
+  fullscreenBtn.addEventListener('click', () => {
+    const container = document.getElementById('vis-network-container');
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(err => {
+        logToTerminal(`${getTimestamp()} [SYSTEM_ERR] Fullscreen mode blocked: ${err.message}`, 'error');
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  });
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (networkInstance) {
+    setTimeout(() => {
+      networkInstance.setSize('100%', '100%');
+      networkInstance.fit();
+    }, 120);
+  }
+  
+  if (fullscreenBtn) {
+    if (document.fullscreenElement) {
+      fullscreenBtn.innerText = "Exit Full Screen";
+    } else {
+      fullscreenBtn.innerText = "🖥️ Full Screen";
+    }
+  }
 });
 
 // Helper: Local UI Logger wrapper

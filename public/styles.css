@@ -611,6 +611,14 @@ textarea {
   overflow: hidden;
 }
 
+.network-container:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #040712 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
 .canvas-prompt {
   position: absolute;
   top: 50%;

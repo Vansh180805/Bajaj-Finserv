@@ -155,10 +155,13 @@
               <h3>Interactive 2D Physics Sandbox</h3>
               <p class="helper-text">Zoom with scroll wheel. Click and drag nodes to interact with spring physics.</p>
             </div>
-            <div class="canvas-legend">
-              <span class="legend-item"><span class="legend-color tree-color"></span>Tree Node</span>
-              <span class="legend-item"><span class="legend-color cycle-color"></span>Cycle Node</span>
-              <span class="legend-item"><span class="legend-color invalid-color"></span>Invalid / Discarded</span>
+            <div class="canvas-header-right" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+              <button class="btn btn-sm btn-outline" id="fullscreen-btn">🖥️ Full Screen</button>
+              <div class="canvas-legend">
+                <span class="legend-item"><span class="legend-color tree-color"></span>Tree Node</span>
+                <span class="legend-item"><span class="legend-color cycle-color"></span>Cycle Node</span>
+                <span class="legend-item"><span class="legend-color invalid-color"></span>Invalid / Discarded</span>
+              </div>
             </div>
           </div>
           <div id="vis-network-container" class="network-container">
