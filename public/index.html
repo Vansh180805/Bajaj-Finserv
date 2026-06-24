@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Advanced Graph Engine Sandbox for Baja Finserv. Build graphs, resolve hierarchies, compute topological paths, visualize physics networks, and inspect compiler execution logs.">
+  <title>Baja Finserv | Graph Engine Sandbox</title>
+  
+  <!-- Google Fonts: Outfit for headers, Inter for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Vis.js Standalone for Draggable Physics Graphs -->
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient backgrounds -->
+  <div class="glow-bg glow-1"></div>
+  <div class="glow-bg glow-2"></div>
+  
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-accent">BAJA</span> FINSERV <span class="logo-subtitle">GRAPH ENGINE SANDBOX</span>
+      </div>
+      <div class="header-badges">
+        <span class="header-badge">Round 1</span>
+        <span class="header-badge badge-accent">Chitkara Full Stack F.E.C.</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="app-main-grid">
+      
+      <!-- COLUMN 1: CONTROLS & COMPILER LOGS -->
+      <section class="workspace-col controls-column">
+        
+        <!-- Live Developer Profile Settings -->
+        <div class="glass-card compact-card identity-box">
+          <div class="card-header">
+            <h3>Developer Profile</h3>
+            <span class="indicator-dot active"></span>
+          </div>
+          <div class="profile-details-grid">
+            <div>
+              <div class="p-label">USER ID</div>
+              <div class="p-val" id="profile-user-id">-</div>
+            </div>
+            <div>
+              <div class="p-label">ROLL NO</div>
+              <div class="p-val" id="profile-roll">-</div>
+            </div>
+            <div class="span-2">
+              <div class="p-label">EMAIL ADDRESS</div>
+              <div class="p-val" id="profile-email">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph Setup & Visual Builder -->
+        <div class="glass-card setup-card">
+          <div class="section-title">
+            <h2>Graph Input & Builder</h2>
+            <p>Type JSON edges or use the Quick Edge Builder.</p>
+          </div>
+
+          <!-- JSON Array Editor -->
+          <div class="form-group">
+            <label>JSON Array Editor</label>
+            <div class="textarea-wrapper">
+              <textarea id="node-data" rows="6" placeholder='["A->B"]'></textarea>
+            </div>
+          </div>
+
+          <!-- Quick Edge Builder UI -->
+          <div class="quick-builder-tool">
+            <h4>Quick Edge Builder</h4>
+            <div class="builder-inputs">
+              <input type="text" id="builder-parent" maxlength="1" placeholder="Parent (A-Z)" class="input-node">
+              <span class="arrow-symbol">➔</span>
+              <input type="text" id="builder-child" maxlength="1" placeholder="Child (A-Z)" class="input-node">
+              <button type="button" class="btn btn-sm btn-primary" id="add-edge-btn">Add Edge</button>
+            </div>
+          </div>
+
+          <!-- Try Example Pre-fills -->
+          <div class="quick-fill-container">
+            <span class="quick-label">Load Preset:</span>
+            <button type="button" class="btn btn-sm btn-outline" onclick="loadExample('standard')">Standard Forest</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="loadExample('cycle')">Cycles & Loops</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="loadExample('diamonds')">Diamond Case</button>
+          </div>
+
+          <button id="submit-btn" class="btn btn-primary btn-block">
+            <span class="btn-text">Execute Graph Pipeline</span>
+            <div class="spinner hide" id="submit-spinner"></div>
+          </button>
+        </div>
+
+        <!-- Compiler Log Terminal (Real time logs) -->
+        <div class="glass-card terminal-card">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="t-btn red"></span>
+              <span class="t-btn yellow"></span>
+              <span class="t-btn green"></span>
+            </div>
+            <div class="terminal-title">compiler-logs.sh</div>
+            <button class="terminal-clear" id="clear-terminal-btn">Clear</button>
+          </div>
+          <div class="terminal-body" id="compiler-terminal">
+            <div class="log-line system">[SYSTEM] Terminal initialized. Waiting for pipeline execution.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMN 2: INTERACTIVE VIS.JS WORKSPACE & ANALYTICS -->
+      <section class="workspace-col canvas-column">
+        
+        <!-- Summary Stats Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card glass-card">
+            <div class="metric-icon val-trees">🌳</div>
+            <div class="metric-data">
+              <span class="metric-label">Valid Trees</span>
+              <span class="metric-value" id="stat-trees">0</span>
+            </div>
+          </div>
+          
+          <div class="metric-card glass-card">
+            <div class="metric-icon val-cycles">🔄</div>
+            <div class="metric-data">
+              <span class="metric-label">Cyclic Loops</span>
+              <span class="metric-value" id="stat-cycles">0</span>
+            </div>
+          </div>
+          
+          <div class="metric-card glass-card">
+            <div class="metric-icon val-deepest">👑</div>
+            <div class="metric-data">
+              <span class="metric-label">Deepest Root</span>
+              <span class="metric-value" id="stat-deepest">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vis.js Physics Graph Sandbox -->
+        <div class="glass-card canvas-card">
+          <div class="canvas-header">
+            <div>
+              <h3>Interactive 2D Physics Sandbox</h3>
+              <p class="helper-text">Zoom with scroll wheel. Click and drag nodes to interact with spring physics.</p>
+            </div>
+            <div class="canvas-legend">
+              <span class="legend-item"><span class="legend-color tree-color"></span>Tree Node</span>
+              <span class="legend-item"><span class="legend-color cycle-color"></span>Cycle Node</span>
+              <span class="legend-item"><span class="legend-color invalid-color"></span>Invalid / Discarded</span>
+            </div>
+          </div>
+          <div id="vis-network-container" class="network-container">
+            <div class="canvas-fallback-text" id="canvas-prompt">
+              💡 Execute Graph Pipeline above to render the 2D physics layout.
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph Analytics Section -->
+        <div class="analytics-row-grid">
+          
+          <!-- Adjacency Matrix Grid -->
+          <div class="glass-card analytics-card">
+            <h3>Adjacency Connection Matrix</h3>
+            <p class="helper-text">Adjacency index representing parent-to-child edges.</p>
+            <div class="matrix-table-container" id="matrix-container">
+              <span class="empty-text">No active data connections.</span>
+            </div>
+          </div>
+
+          <!-- Centrality Analysis Chart -->
+          <div class="glass-card analytics-card">
+            <h3>Degree Centrality Analysis</h3>
+            <p class="helper-text">Comparing In-degree (inputs) and Out-degree (children) per node.</p>
+            <div class="chart-container" id="degrees-chart-container">
+              <span class="empty-text">No degree statistics to compute.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMN 3: CSS TREES & CODE OUTPUT -->
+      <section class="workspace-col details-column">
+        
+        <!-- Anomalies Section -->
+        <div class="glass-card anomalies-card">
+          <div class="anomaly-row">
+            <h4>Invalid Entries <span class="badge badge-error" id="invalid-badge">0</span></h4>
+            <div class="pills-container scrollable-pills" id="invalid-container">
+              <span class="empty-text">None</span>
+            </div>
+          </div>
+          <div class="anomaly-row margin-top-md">
+            <h4>Duplicate Edges <span class="badge badge-warn" id="duplicate-badge">0</span></h4>
+            <div class="pills-container scrollable-pills" id="duplicate-container">
+              <span class="empty-text">None</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Visualized Hierarchies list -->
+        <div class="glass-card hierarchy-list-card">
+          <div class="card-header">
+            <h3>Acyclic & Cyclic Trees</h3>
+            <p class="helper-text">Visual CSS hierarchy structures.</p>
+          </div>
+          <div id="hierarchies-list" class="hierarchies-scroller">
+            <div class="flex-center padded-empty">
+              <p class="empty-text">Waiting for data...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw JSON Inspector -->
+        <div class="glass-card raw-json-card">
+          <div class="json-header">
+            <h3>Raw JSON Payload</h3>
+            <button class="btn btn-sm btn-outline" id="copy-json-btn">Copy Payload</button>
+          </div>
+          <pre><code id="json-output">Execute pipeline to load response.</code></pre>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; 2026 Baja Finserv Graph Engine Sandbox. All processing algorithms developed with strict O(V+E) validation constraints.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
